@@ -1,0 +1,82 @@
+name: edu-shorts
+
+on:
+  schedule:
+    - cron: "0 6 * * *"     # 07:00 المغرب -> اختبار QCM
+    - cron: "0 12 * * *"    # 13:00 المغرب -> سؤال وجواب
+    - cron: "0 18 * * *"    # 19:00 المغرب -> اقتراحات تطبيقية
+  workflow_dispatch:
+    inputs:
+      types:
+        description: "الأنواع (qcm,qa,tips)"
+        default: "qcm,qa,tips"
+      dry_run:
+        description: "تجربة بدون نشر"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: edu-shorts
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg fonts-noto-core fontconfig
+      - run: pip install -r requirements.txt
+      - run: python src/build.py
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          VIDEO_TYPES: ${{ github.event_name == 'workflow_dispatch' && inputs.types || (github.event.schedule == '0 6 * * *' && 'qcm' || (github.event.schedule == '0 12 * * *' && 'qa' || 'tips')) }}
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: out/site }
+      - uses: actions/upload-artifact@v4
+        with: { name: out, path: out/, retention-days: 3 }
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.d.outputs.page_url }}
+    outputs:
+      page_url: ${{ steps.d.outputs.page_url }}
+    steps:
+      - id: d
+        uses: actions/deploy-pages@v4
+
+  publish:
+    needs: [build, deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: out, path: out }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -r requirements.txt
+      - run: python src/publish.py
+        env:
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+          PAGES_URL: ${{ needs.deploy.outputs.page_url }}
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+      - name: حفظ السجل (يمنع التكرار ويُبقي المستودع نشطاً)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/history.json
+          git diff --cached --quiet || (git commit -m "chore: update history" && git pull --rebase && git push)

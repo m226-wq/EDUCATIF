@@ -1,0 +1,43 @@
+channel_name: "مستجدات التربية"        # يظهر أعلى الفيديو
+voice: "ar-SA-HamedNeural"            # بدائل: ar-EG-SalmaNeural / ar-AE-HamdanNeural / ar-MA-JamalNeural
+voice_rate: "-3%"
+
+# نماذج Groq بالترتيب: عند استنفاد حصة نموذج أو فشله ينتقل تلقائياً للتالي (لكل نموذج حصة مجانية مستقلة)
+groq_models:
+  - "llama-3.3-70b-versatile"
+  - "openai/gpt-oss-120b"
+  - "qwen/qwen3-32b"
+
+lookback_days: 45
+contact_email: "your-email@example.com"   # يطلبه Crossref لتحسين الخدمة (اختياري)
+
+hashtags: ["#التربية", "#التعليم", "#البيداغوجيا", "#الديداكتيك", "#الأستاذ", "#التعلم"]
+
+music_volume: 0.10      # ضع ملفات mp3 حرة الحقوق في assets/music/ لاستعمالها، وإلا تُولَّد موسيقى هادئة تلقائياً
+
+journals:
+  - {issn: "1040-726X", name: "Educational Psychology Review"}
+  - {issn: "0959-4752", name: "Learning and Instruction"}
+  - {issn: "0034-6543", name: "Review of Educational Research"}
+  - {issn: "0022-0663", name: "Journal of Educational Psychology"}
+  - {issn: "0009-3920", name: "Child Development"}
+  - {issn: "0012-1649", name: "Developmental Psychology"}
+  - {issn: "0742-051X", name: "Teaching and Teacher Education"}
+  - {issn: "0013-189X", name: "Educational Researcher"}
+  - {issn: "0360-1315", name: "Computers & Education"}
+  - {issn: "0737-0008", name: "Cognition and Instruction"}
+  - {issn: "0007-0998", name: "British Journal of Educational Psychology"}
+
+eric_queries:
+  - "pedagogy"
+  - "didactics OR instructional design"
+  - "child development learning"
+  - "teacher education"
+  - "formative assessment"
+
+rss:
+  - {name: "Edutopia", url: "https://www.edutopia.org/rss.xml"}
+  - {name: "The Conversation - Education", url: "https://theconversation.com/global/topics/education-2/articles.atom"}
+  - {name: "ScienceDaily - Educational Psychology", url: "https://www.sciencedaily.com/rss/mind_brain/educational_psychology.xml"}
+  - {name: "OECD Education", url: "https://www.oecd.org/en/topics/education.rss"}
+  - {name: "UNESCO", url: "https://www.unesco.org/en/rss.xml"}
